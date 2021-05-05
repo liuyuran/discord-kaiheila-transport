@@ -1,4 +1,4 @@
-package site.chaotic.quantum.khlframework.event;
+package site.chaotic.quantum.khlframework.struct;
 
 import org.springframework.context.ApplicationEvent;
 
@@ -8,5 +8,9 @@ public class BaseEvent<T> extends ApplicationEvent {
     public BaseEvent(Object source, T data) {
         super(source);
         this.data = data;
+    }
+
+    public T getData() {
+        return data;
     }
 }
