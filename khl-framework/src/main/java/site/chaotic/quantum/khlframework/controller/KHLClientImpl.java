@@ -1,5 +1,6 @@
 package site.chaotic.quantum.khlframework.controller;
 
+import com.google.gson.Gson;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.MediaType;
@@ -9,6 +10,8 @@ import org.springframework.web.reactive.socket.client.WebSocketClient;
 import reactor.core.publisher.Mono;
 import site.chaotic.quantum.khlframework.config.KHLBotConfig;
 import site.chaotic.quantum.khlframework.interfaces.KHLClient;
+import site.chaotic.quantum.khlframework.json.GsonDecoder;
+import site.chaotic.quantum.khlframework.json.GsonEncoder;
 import site.chaotic.quantum.khlframework.struct.http.GatewayResponseBody;
 import site.chaotic.quantum.khlframework.struct.http.MessageCreateRequest;
 import site.chaotic.quantum.khlframework.struct.http.MessageCreateResponse;
@@ -27,9 +30,12 @@ public class KHLClientImpl implements KHLClient {
 
     public KHLClientImpl(WebClient.Builder builder,
                          KHLBotConfig config,
-                         ApplicationContext publisher) {
-        webClient = builder.baseUrl(KaiHLBaseUrl).build();
-        controller = new WebSocketController(publisher);
+                         ApplicationContext publisher, Gson gson) {
+        webClient = builder.baseUrl(KaiHLBaseUrl).codecs(clientCodecConfigurer -> {
+            clientCodecConfigurer.customCodecs().register(new GsonEncoder(gson));
+            clientCodecConfigurer.customCodecs().register(new GsonDecoder(gson));
+        }).build();
+        controller = new WebSocketController(publisher, gson);
         botConfig = config;
         connect().subscribe();
     }

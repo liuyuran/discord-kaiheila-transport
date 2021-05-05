@@ -1,6 +1,8 @@
 package site.chaotic.quantum.khlframework.controller;
 
+import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.boot.configurationprocessor.json.JSONObject;
 import org.springframework.context.ApplicationContext;
@@ -19,15 +21,16 @@ import static site.chaotic.quantum.khlframework.config.APIConst.*;
 public class WebSocketController implements WebSocketHandler {
     private final ApplicationContext publisher;
 
-    private final Gson gson = new Gson();
+    private final Gson gson;
 
     private boolean helloFlag = false;
     private boolean pongFlag = false;
     private int lastSN = 0;
     private String sessionId = "";
 
-    public WebSocketController(ApplicationContext publisher) {
+    public WebSocketController(ApplicationContext publisher, Gson gson) {
         this.publisher = publisher;
+        this.gson = gson;
     }
 
     public void reset() {

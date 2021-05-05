@@ -1,5 +1,8 @@
 package site.chaotic.quantum.khlframework;
 
+import com.google.gson.FieldNamingPolicy;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -17,7 +20,11 @@ import site.chaotic.quantum.khlframework.interfaces.KHLClient;
 public class KhlClientAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean({KHLClient.class})
-    public KHLClient khlClient(WebClient.Builder builder, KHLBotConfig config, ApplicationContext publisher) {
-        return new KHLClientImpl(builder, config, publisher);
+    public KHLClient khlClient(WebClient.Builder builder, KHLBotConfig config,
+                               ApplicationContext publisher) {
+        GsonBuilder gsonBuilder = new GsonBuilder();
+        gsonBuilder.setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES);
+        Gson gson = gsonBuilder.create();
+        return new KHLClientImpl(builder, config, publisher, gson);
     }
 }
