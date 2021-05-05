@@ -5,11 +5,11 @@
     <parent>
         <groupId>site.chaotic.quantum</groupId>
         <artifactId>project-parent</artifactId>
-        <version>0.0.1</version>
+        <version>1.0.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>khl-framework</artifactId>
-    <version>0.0.1</version>
+    <version>1.0.0</version>
     <name>khl-framework</name>
     <description>开黑啦spring boot starter框架</description>
     <properties>

@@ -5,11 +5,11 @@
     <parent>
         <groupId>site.chaotic.quantum</groupId>
         <artifactId>project-parent</artifactId>
-        <version>0.0.1</version>
+        <version>1.0.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>message-transport-server</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.0</version>
     <name>message-transport-server</name>
     <description>Demo project for Spring Boot</description>
     <properties>
@@ -17,6 +17,10 @@
         <spring-native.version>0.9.2</spring-native.version>
     </properties>
     <dependencies>
+        <dependency>
+            <groupId>site.chaotic.quantum</groupId>
+            <artifactId>khl-framework</artifactId>
+        </dependency>
         <dependency>
             <groupId>com.discord4j</groupId>
             <artifactId>discord4j-core</artifactId>
