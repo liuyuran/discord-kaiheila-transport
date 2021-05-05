@@ -70,7 +70,7 @@ public class KaiHLService {
                 // 30秒一次心跳
                 try {
                     JSONObject msg = new JSONObject();
-                    msg.put("s", 2);
+                    msg.put("s", MSG_TYPE_PING);
                     msg.put("sn", lastSN);
                     pongFlag = false;
                     return Mono.just(msg);
