@@ -58,6 +58,25 @@ public class KaiHLService {
                         case MSG_TYPE_RECONNECT:
                             return Mono.error(new Exception("远程服务器要求中断连接"));
                         case MSG_TYPE_API:
+                            lastSN = payload.getInt("sn");
+                            payload = payload.getJSONObject("d");
+                            String channelType = payload.getString("channel_type");
+                            int type = payload.getInt("type");
+                            switch (channelType) {
+                                case "GROUP":
+                                    switch (type) {
+                                        case 1:
+                                            JSONObject obj = new JSONObject();
+                                            return Flux.empty();
+                                        default:
+                                            log.info("暂不支持文字以外的消息");
+                                            return Flux.empty();
+                                    }
+                                case "PERSON":
+                                default:
+                                    log.info("暂不支持私聊消息");
+                                    return Flux.empty();
+                            }
                         case MSG_TYPE_RESUME:
                             // 可能是离线消息功能，但目前没想到有什么用
                         default:

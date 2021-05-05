@@ -7,7 +7,6 @@ import site.chaotic.quantum.messagetransportserver.config.DiscordBotConfig;
 import site.chaotic.quantum.messagetransportserver.config.KHLBotConfig;
 
 @SpringBootApplication
-@EnableConfigurationProperties({KHLBotConfig.class, DiscordBotConfig.class})
 public class MessageTransportServerApplication {
 
     public static void main(String[] args) {
