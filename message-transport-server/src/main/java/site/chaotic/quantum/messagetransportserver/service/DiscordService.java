@@ -46,9 +46,8 @@ public class DiscordService {
                                 if (message.getUserData().bot().toOptional().orElse(false)) return Mono.empty();
                                 bridgeService.addToKHL(new MessageCard(
                                         channel.getId().asString(),
-                                        String.format("%s [%s]: %s",
+                                        String.format("%s: %s",
                                                 message.getUserData().username(),
-                                                message.getUserData().id().asString(),
                                                 message.getData().content())
                                 ));
                                 return Mono.empty();
