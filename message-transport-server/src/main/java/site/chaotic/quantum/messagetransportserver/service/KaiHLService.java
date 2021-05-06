@@ -30,7 +30,7 @@ public class KaiHLService {
     public void syncMessage() {
         List<MessageCard> messageCards = bridgeService.clearToKHL();
         for (MessageCard card: messageCards) {
-            client.sendMessage(card.getChannelId(), card.getContent());
+            client.sendMessage(bridgeService.translateChannelId(card.getChannelId()), card.getContent());
         }
     }
 

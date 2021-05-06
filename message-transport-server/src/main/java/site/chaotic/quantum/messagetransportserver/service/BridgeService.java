@@ -24,7 +24,7 @@ public class BridgeService {
     public List<MessageCard> clearToDiscord() {
         List<MessageCard> tmp = new ArrayList<>();
         MessageCard msg;
-        while ((msg = messageQueueToDiscord.peek()) != null) {
+        while ((msg = messageQueueToDiscord.poll()) != null) {
             tmp.add(msg);
         }
         return tmp;
@@ -33,9 +33,15 @@ public class BridgeService {
     public List<MessageCard> clearToKHL() {
         List<MessageCard> tmp = new ArrayList<>();
         MessageCard msg;
-        while ((msg = messageQueueToDiscord.peek()) != null) {
+        while ((msg = messageQueueToKHL.poll()) != null) {
             tmp.add(msg);
         }
         return tmp;
+    }
+
+    public String translateChannelId(String id) {
+        if (id.equals("413997224880504834")) return "7569533375445017";
+        if (id.equals("7569533375445017")) return "413997224880504834";
+        return "";
     }
 }

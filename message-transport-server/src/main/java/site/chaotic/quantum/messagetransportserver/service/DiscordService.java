@@ -1,36 +1,78 @@
 package site.chaotic.quantum.messagetransportserver.service;
 
+import discord4j.common.ReactorResources;
 import discord4j.core.DiscordClient;
 import discord4j.core.DiscordClientBuilder;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.Event;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Message;
+import discord4j.discordjson.json.MessageData;
 import discord4j.rest.request.RouterOptions;
+import lombok.extern.log4j.Log4j2;
 import org.reactivestreams.Publisher;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
+import reactor.netty.http.client.HttpClient;
+import reactor.netty.transport.ProxyProvider;
 import site.chaotic.quantum.messagetransportserver.config.DiscordBotConfig;
+import site.chaotic.quantum.messagetransportserver.util.MessageCard;
 
 import java.util.List;
 
 @Service
+@Log4j2
 public class DiscordService {
-//    private final DiscordClient client;
+    private final BridgeService bridgeService;
+    private final DiscordClient client;
 
-    public <T extends Event> DiscordService(DiscordBotConfig botConfig) {
-        /*client = DiscordClient.create(botConfig.getToken());
+    public <T extends Event> DiscordService(DiscordBotConfig botConfig, BridgeService bridgeService) {
+        ReactorResources reactorResources = ReactorResources.builder()
+                .httpClient(HttpClient.create().proxy(options -> {
+                    options.type(ProxyProvider.Proxy.SOCKS5)
+                            .host("127.0.0.1")
+                            .port(10808)
+                            .build();
+                }))
+                .build();
+        client = DiscordClientBuilder.create(botConfig.getToken()).setReactorResources(reactorResources).build();
         client.withGateway(gateway -> {
             final Publisher<?> pingPong = gateway.on(MessageCreateEvent.class, event ->
                     Mono.just(event.getMessage())
                             .flatMap(message -> message.getChannel().flatMap(channel -> {
-                               return Mono.empty();
+                                log.info(message.getData().content());
+                                if (message.getUserData().bot().toOptional().orElse(false)) return Mono.empty();
+                                bridgeService.addToKHL(new MessageCard(
+                                        channel.getId().asString(),
+                                        String.format("%s [%s]: %s",
+                                                message.getUserData().username(),
+                                                message.getUserData().id().asString(),
+                                                message.getData().content())
+                                ));
+                                return Mono.empty();
                             })));
 
             final Publisher<?> onDisconnect = gateway.onDisconnect()
                     .doOnTerminate(() -> System.out.println("Disconnected!"));
 
             return Mono.when(pingPong, onDisconnect);
-        }).block();*/
+        }).subscribe();
+        this.bridgeService = bridgeService;
+    }
+
+    @Scheduled(cron = "*/10 * * * * ? ")
+    public void syncMessage() {
+        client.withGateway(gateway -> {
+            List<MessageCard> messageCards = bridgeService.clearToDiscord();
+            for (MessageCard card : messageCards) {
+                gateway.getRestClient().restMessage(MessageData.builder()
+                        .content(card.getContent())
+                        .channelId(bridgeService.translateChannelId(card.getChannelId()))
+                        .build());
+            }
+            return Mono.empty();
+        }).subscribe();
     }
 }
