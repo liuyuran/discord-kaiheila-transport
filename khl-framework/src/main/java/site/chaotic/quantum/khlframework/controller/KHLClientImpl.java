@@ -90,7 +90,8 @@ public class KHLClientImpl implements KHLClient {
                         .content(content)
                         .build()), MessageCreateRequest.class)
                 .retrieve().bodyToMono(MessageCreateResponse.class).flatMap(item -> {
-                    return Mono.empty();
+                    if (item.getCode() == 0) return Mono.empty();
+                    return Mono.error(new Exception(item.getMessage()));
                 });
     }
 }
