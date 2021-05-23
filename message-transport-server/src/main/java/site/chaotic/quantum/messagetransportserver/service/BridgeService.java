@@ -1,17 +1,24 @@
 package site.chaotic.quantum.messagetransportserver.service;
 
 import org.springframework.stereotype.Service;
+import site.chaotic.quantum.messagetransportserver.consts.ChannelLink;
 import site.chaotic.quantum.messagetransportserver.util.MessageCard;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Queue;
+import java.util.*;
 import java.util.concurrent.LinkedBlockingQueue;
 
 @Service
 public class BridgeService {
     private final Queue<MessageCard> messageQueueToDiscord = new LinkedBlockingQueue<>();
     private final Queue<MessageCard> messageQueueToKHL = new LinkedBlockingQueue<>();
+    private static final HashMap<String, String> link = new HashMap<>();
+
+    static {
+        Arrays.stream(ChannelLink.values()).forEach(item -> {
+            link.put(item.getDiscordId(), item.getKHLId());
+            link.put(item.getKHLId(), item.getDiscordId());
+        });
+    }
 
     public void addToDiscord(MessageCard msg) {
         messageQueueToDiscord.offer(msg);
@@ -40,8 +47,6 @@ public class BridgeService {
     }
 
     public String translateChannelId(String id) {
-        if (id.equals("413997224880504834")) return "7569533375445017";
-        if (id.equals("7569533375445017")) return "413997224880504834";
-        return "";
+        return link.getOrDefault(id, null);
     }
 }

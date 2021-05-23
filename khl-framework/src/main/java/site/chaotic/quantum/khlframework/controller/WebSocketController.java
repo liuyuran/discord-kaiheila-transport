@@ -40,7 +40,6 @@ public class WebSocketController implements WebSocketHandler {
         sessionId = "";
     }
 
-    @SuppressWarnings("NullableProblems")
     @Override
     public Mono<Void> handle(WebSocketSession session) {
         return session.send(session.receive().flatMap(message -> {

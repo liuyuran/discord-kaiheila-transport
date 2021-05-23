@@ -1,12 +1,14 @@
 package site.chaotic.quantum.messagetransportserver.service;
 
 import discord4j.common.ReactorResources;
+import discord4j.common.util.Snowflake;
 import discord4j.core.DiscordClient;
 import discord4j.core.DiscordClientBuilder;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.event.domain.Event;
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Message;
+import discord4j.discordjson.json.ImmutableMessageData;
 import discord4j.discordjson.json.MessageData;
 import discord4j.rest.request.RouterOptions;
 import lombok.extern.log4j.Log4j2;
@@ -20,6 +22,7 @@ import reactor.netty.transport.ProxyProvider;
 import site.chaotic.quantum.messagetransportserver.config.DiscordBotConfig;
 import site.chaotic.quantum.messagetransportserver.util.MessageCard;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -29,20 +32,20 @@ public class DiscordService {
     private final DiscordClient client;
 
     public <T extends Event> DiscordService(DiscordBotConfig botConfig, BridgeService bridgeService) {
-        ReactorResources reactorResources = ReactorResources.builder()
+        /*ReactorResources reactorResources = ReactorResources.builder()
                 .httpClient(HttpClient.create().proxy(options -> {
                     options.type(ProxyProvider.Proxy.SOCKS5)
                             .host("127.0.0.1")
                             .port(10808)
                             .build();
                 }))
-                .build();
-        client = DiscordClientBuilder.create(botConfig.getToken()).setReactorResources(reactorResources).build();
+                .build();*/
+        client = DiscordClientBuilder.create(botConfig.getToken())/*.setReactorResources(reactorResources)*/.build();
         client.withGateway(gateway -> {
             final Publisher<?> pingPong = gateway.on(MessageCreateEvent.class, event ->
                     Mono.just(event.getMessage())
                             .flatMap(message -> message.getChannel().flatMap(channel -> {
-                                log.info(message.getData().content());
+                                log.info(String.format("[%s] %s", channel.getId().asString(), message.getData().content()));
                                 if (message.getUserData().bot().toOptional().orElse(false)) return Mono.empty();
                                 bridgeService.addToKHL(new MessageCard(
                                         channel.getId().asString(),
@@ -54,7 +57,7 @@ public class DiscordService {
                             })));
 
             final Publisher<?> onDisconnect = gateway.onDisconnect()
-                    .doOnTerminate(() -> System.out.println("Disconnected!"));
+                    .doOnTerminate(() -> log.info("Discord disconnected!"));
 
             return Mono.when(pingPong, onDisconnect);
         }).subscribe();
@@ -63,15 +66,16 @@ public class DiscordService {
 
     @Scheduled(cron = "*/10 * * * * ? ")
     public void syncMessage() {
-        client.withGateway(gateway -> {
+        client.withGateway(gateway -> gateway.getSelf().flatMap(user -> {
             List<MessageCard> messageCards = bridgeService.clearToDiscord();
+            List<Mono<MessageData>> task = new ArrayList<>();
             for (MessageCard card : messageCards) {
-                gateway.getRestClient().restMessage(MessageData.builder()
-                        .content(card.getContent())
-                        .channelId(bridgeService.translateChannelId(card.getChannelId()))
-                        .build());
+                if (bridgeService.translateChannelId(card.getChannelId()) == null) continue;
+                task.add(gateway.getChannelById(Snowflake.of(
+                        bridgeService.translateChannelId(card.getChannelId())
+                )).flatMap(channel -> channel.getRestChannel().createMessage(card.getContent())));
             }
-            return Mono.empty();
-        }).subscribe();
+            return Mono.zip(task, objects -> objects);
+        })).subscribe();
     }
 }

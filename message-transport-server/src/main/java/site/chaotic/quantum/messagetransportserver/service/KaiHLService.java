@@ -30,6 +30,7 @@ public class KaiHLService {
     public void syncMessage() {
         List<MessageCard> messageCards = bridgeService.clearToKHL();
         for (MessageCard card: messageCards) {
+            if (bridgeService.translateChannelId(card.getChannelId()) == null) continue;
             client.sendMessage(bridgeService.translateChannelId(card.getChannelId()),
                     card.getContent()).subscribe();
         }
@@ -37,11 +38,11 @@ public class KaiHLService {
 
     @EventListener
     public void processMessageEvent(BaseEvent<BaseMessageContent<NormalExtraFragment>> event) {
+        log.info(String.format("[%s] %s", event.getData().getTargetId(), event.getData().getContent()));
         bridgeService.addToDiscord(new MessageCard(
                 event.getData().getTargetId(),
-                String.format("%s [%s]: %s",
-                        event.getData().getExtra().getAuthor().getNickName(),
-                        event.getData().getAuthorId(),
+                String.format("%s: %s",
+                        event.getData().getExtra().getAuthor().getUsername(),
                         event.getData().getContent())
         ));
     }
