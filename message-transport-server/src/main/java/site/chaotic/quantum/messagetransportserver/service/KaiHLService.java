@@ -18,32 +18,8 @@ import java.util.List;
 @Service
 @Log4j2
 public class KaiHLService {
-    private final KHLClient client;
-    private final BridgeService bridgeService;
-
-    public KaiHLService(BridgeService bridgeService, KHLClient client) {
-        this.bridgeService = bridgeService;
-        this.client = client;
-    }
-
-    @Scheduled(cron = "*/10 * * * * ? ")
-    public void syncMessage() {
-        List<MessageCard> messageCards = bridgeService.clearToKHL();
-        for (MessageCard card: messageCards) {
-            if (bridgeService.translateChannelId(card.getChannelId()) == null) continue;
-            client.sendMessage(bridgeService.translateChannelId(card.getChannelId()),
-                    card.getContent()).subscribe();
-        }
-    }
-
     @EventListener
     public void processMessageEvent(BaseEvent<BaseMessageContent<NormalExtraFragment>> event) {
         log.info(String.format("[%s] %s", event.getData().getTargetId(), event.getData().getContent()));
-        bridgeService.addToDiscord(new MessageCard(
-                event.getData().getTargetId(),
-                String.format("%s: %s",
-                        event.getData().getExtra().getAuthor().getUsername(),
-                        event.getData().getContent())
-        ));
     }
 }
