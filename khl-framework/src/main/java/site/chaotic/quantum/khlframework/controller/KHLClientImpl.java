@@ -42,8 +42,7 @@ public class KHLClientImpl implements KHLClient {
 
     private Mono<String> generateWSGateway() {
         return webClient.get().uri(KaiHLApiGateway)
-                .header("Authorization",
-                        String.format("Bot %s", botConfig.getToken()))
+                .header("Authorization", String.format("Bot %s", botConfig.getToken()))
                 .retrieve().bodyToMono(GatewayResponseBody.class)
                 .flatMap(item -> {
                     log.info("gateway接口返回值：" + item.toString());

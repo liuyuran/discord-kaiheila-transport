@@ -9,4 +9,5 @@ public class KHLBotConfig {
     private String clientId;
     private String clientSecret;
     private String token;
+    private String commandPrefix;
 }
