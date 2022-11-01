@@ -16,6 +16,7 @@ import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;
 import reactor.netty.transport.ProxyProvider;
 import site.chaotic.quantum.messagetransportserver.config.DiscordBotConfig;
+import site.chaotic.quantum.messagetransportserver.consts.MessageType;
 import site.chaotic.quantum.messagetransportserver.util.MessageCard;
 
 import java.util.ArrayList;
@@ -48,6 +49,7 @@ public class DiscordService {
                                 log.info(String.format("[%s] %s", channel.getId().asString(), message.getData().content()));
                                 if (message.getUserData().bot().toOptional().orElse(false)) return Mono.empty();
                                 bridgeService.addToKook(new MessageCard(
+                                        MessageType.Text,
                                         channel.getId().asString(),
                                         String.format("%s: %s",
                                                 message.getUserData().username(),
@@ -71,9 +73,17 @@ public class DiscordService {
             List<Mono<MessageData>> task = new ArrayList<>();
             for (MessageCard card : messageCards) {
                 if (bridgeService.translateChannelId(card.getChannelId()) == null) continue;
-                task.add(gateway.getChannelById(Snowflake.of(
-                        bridgeService.translateChannelId(card.getChannelId())
-                )).flatMap(channel -> channel.getRestChannel().createMessage(card.getContent())));
+                switch (card.getType()) {
+                    case Text:
+                        task.add(gateway.getChannelById(Snowflake.of(
+                                bridgeService.translateChannelId(card.getChannelId())
+                        )).flatMap(channel -> channel.getRestChannel().createMessage(card.getContent())));
+                        break;
+                    case Image:
+                    case Unknown:
+                    default:
+                        break;
+                }
             }
             return Mono.zip(task, objects -> objects);
         })).subscribe();

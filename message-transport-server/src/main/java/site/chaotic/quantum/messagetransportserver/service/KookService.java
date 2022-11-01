@@ -10,6 +10,7 @@ import site.chaotic.quantum.khlframework.interfaces.KHLClient;
 import site.chaotic.quantum.khlframework.struct.BaseEvent;
 import site.chaotic.quantum.khlframework.struct.ws.BaseMessageContent;
 import site.chaotic.quantum.khlframework.struct.ws.NormalExtraFragment;
+import site.chaotic.quantum.messagetransportserver.consts.MessageType;
 import site.chaotic.quantum.messagetransportserver.util.MessageCard;
 
 import java.util.List;
@@ -36,19 +37,26 @@ public class KookService {
         List<MessageCard> messageCards = bridgeService.clearToKook();
         for (MessageCard card: messageCards) {
             if (bridgeService.translateChannelId(card.getChannelId()) == null) continue;
-            client.sendMessage(bridgeService.translateChannelId(card.getChannelId()),
-                    card.getContent()).subscribe();
+            switch (card.getType()) {
+                case Text:
+                    client.sendMessage(bridgeService.translateChannelId(card.getChannelId()), card.getContent()).subscribe();
+                    break;
+                case Image:
+                case Unknown:
+                default:
+                    break;
+            }
         }
     }
 
     @EventListener
     public void processMessageEvent(BaseEvent<BaseMessageContent<NormalExtraFragment>> event) {
         String message = event.getData().getContent();
-        int msgType = event.getData().getType();
-        // 仅当类型为9时，属于文本消息
-        if (msgType != 9 || !message.startsWith(correctPrefix)) return;
+        MessageType msgType = MessageType.fromKookCode(event.getData().getType());
+        if (msgType != MessageType.Text || !message.startsWith(correctPrefix)) return;
         String needTransport = message.replaceFirst(correctPrefix, "").trim();
         bridgeService.addToDiscord(new MessageCard(
+                msgType,
                 event.getData().getTargetId(),
                 needTransport)
         );
