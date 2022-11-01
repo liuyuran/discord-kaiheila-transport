@@ -47,7 +47,7 @@ public class DiscordService {
                             .flatMap(message -> message.getChannel().flatMap(channel -> {
                                 log.info(String.format("[%s] %s", channel.getId().asString(), message.getData().content()));
                                 if (message.getUserData().bot().toOptional().orElse(false)) return Mono.empty();
-                                bridgeService.addToKHL(new MessageCard(
+                                bridgeService.addToKook(new MessageCard(
                                         channel.getId().asString(),
                                         String.format("%s: %s",
                                                 message.getUserData().username(),

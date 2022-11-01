@@ -19,13 +19,13 @@ import java.util.List;
  */
 @Service
 @Log4j2
-public class KaiHLService {
+public class KookService {
     private final BridgeService bridgeService;
     private final KHLClient client;
     private final String correctPrefix;
 
     @Autowired
-    public KaiHLService(BridgeService bridgeService, KHLBotConfig config, KHLClient client) {
+    public KookService(BridgeService bridgeService, KHLBotConfig config, KHLClient client) {
         this.bridgeService = bridgeService;
         this.correctPrefix = String.format("/%s", config.getCommandPrefix());
         this.client = client;
@@ -33,7 +33,7 @@ public class KaiHLService {
 
     @Scheduled(cron = "*/10 * * * * ? ")
     public void syncMessage() {
-        List<MessageCard> messageCards = bridgeService.clearToKHL();
+        List<MessageCard> messageCards = bridgeService.clearToKook();
         for (MessageCard card: messageCards) {
             if (bridgeService.translateChannelId(card.getChannelId()) == null) continue;
             client.sendMessage(bridgeService.translateChannelId(card.getChannelId()),
@@ -44,7 +44,9 @@ public class KaiHLService {
     @EventListener
     public void processMessageEvent(BaseEvent<BaseMessageContent<NormalExtraFragment>> event) {
         String message = event.getData().getContent();
-        if (!message.startsWith(correctPrefix)) return;
+        int msgType = event.getData().getType();
+        // 仅当类型为9时，属于文本消息
+        if (msgType != 9 || !message.startsWith(correctPrefix)) return;
         String needTransport = message.replaceFirst(correctPrefix, "").trim();
         bridgeService.addToDiscord(new MessageCard(
                 event.getData().getTargetId(),

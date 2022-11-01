@@ -10,7 +10,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 @Service
 public class BridgeService {
     private final Queue<MessageCard> messageQueueToDiscord = new LinkedBlockingQueue<>();
-    private final Queue<MessageCard> messageQueueToKHL = new LinkedBlockingQueue<>();
+    private final Queue<MessageCard> messageQueueToKook = new LinkedBlockingQueue<>();
     private static final HashMap<String, String> link = new HashMap<>();
 
     static {
@@ -24,8 +24,8 @@ public class BridgeService {
         messageQueueToDiscord.offer(msg);
     }
 
-    public void addToKHL(MessageCard msg) {
-        messageQueueToKHL.offer(msg);
+    public void addToKook(MessageCard msg) {
+        messageQueueToKook.offer(msg);
     }
 
     public List<MessageCard> clearToDiscord() {
@@ -37,10 +37,10 @@ public class BridgeService {
         return tmp;
     }
 
-    public List<MessageCard> clearToKHL() {
+    public List<MessageCard> clearToKook() {
         List<MessageCard> tmp = new ArrayList<>();
         MessageCard msg;
-        while ((msg = messageQueueToKHL.poll()) != null) {
+        while ((msg = messageQueueToKook.poll()) != null) {
             tmp.add(msg);
         }
         return tmp;
