@@ -32,12 +32,10 @@ public class DiscordService {
         DiscordClientBuilder<DiscordClient, RouterOptions> builder = DiscordClientBuilder.create(botConfig.getToken());
         if (botConfig.getWithLocalProxy()) {
             ReactorResources reactorResources = ReactorResources.builder()
-                    .httpClient(HttpClient.create().proxy(options -> {
-                        options.type(ProxyProvider.Proxy.SOCKS5)
-                                .host("127.0.0.1")
-                                .port(10808)
-                                .build();
-                    }))
+                    .httpClient(HttpClient.create().proxy(options -> options.type(ProxyProvider.Proxy.SOCKS5)
+                            .host("127.0.0.1")
+                            .port(10808)
+                            .build()))
                     .build();
             builder.setReactorResources(reactorResources);
         }
@@ -57,7 +55,6 @@ public class DiscordService {
                                 ));
                                 return Mono.empty();
                             })));
-
             final Publisher<?> onDisconnect = gateway.onDisconnect()
                     .doOnTerminate(() -> log.info("Discord disconnected!"));
 
