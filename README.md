@@ -18,6 +18,8 @@ kook.client-id=<KOOK应用中心里的对应参数>
 kook.client-secret=<KOOK应用中心里的对应参数>
 kook.token=<KOOK应用中心里对应机器人的参数>
 kook.command-prefix=<命令前缀，比如transport，机器人就会对/transport进行转发>
+discord.token=<Discord应用中心BOT选项卡里的token>
+discord.with-local-proxy=<如果需要在墙内开代理，记得设定为true，然后修改代码里的代理配置，否则为false>
 ```
 
 `2. 不存在的`

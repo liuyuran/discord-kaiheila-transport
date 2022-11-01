@@ -20,18 +20,35 @@ import java.util.List;
 @Service
 @Log4j2
 public class KaiHLService {
-    private final KHLBotConfig config;
+    private final BridgeService bridgeService;
+    private final KHLClient client;
+    private final String correctPrefix;
 
     @Autowired
-    public KaiHLService(KHLBotConfig config) {
-        this.config = config;
+    public KaiHLService(BridgeService bridgeService, KHLBotConfig config, KHLClient client) {
+        this.bridgeService = bridgeService;
+        this.correctPrefix = String.format("/%s", config.getCommandPrefix());
+        this.client = client;
+    }
+
+    @Scheduled(cron = "*/10 * * * * ? ")
+    public void syncMessage() {
+        List<MessageCard> messageCards = bridgeService.clearToKHL();
+        for (MessageCard card: messageCards) {
+            if (bridgeService.translateChannelId(card.getChannelId()) == null) continue;
+            client.sendMessage(bridgeService.translateChannelId(card.getChannelId()),
+                    card.getContent()).subscribe();
+        }
     }
 
     @EventListener
     public void processMessageEvent(BaseEvent<BaseMessageContent<NormalExtraFragment>> event) {
         String message = event.getData().getContent();
-        if (!message.startsWith(String.format("/%s", config.getCommandPrefix()))) return;
-        String[] command = message.split(" ");
-        log.info(String.format("[%s] %s", event.getData().getTargetId(), message));
+        if (!message.startsWith(correctPrefix)) return;
+        String needTransport = message.replaceFirst(correctPrefix, "").trim();
+        bridgeService.addToDiscord(new MessageCard(
+                event.getData().getTargetId(),
+                needTransport)
+        );
     }
 }
