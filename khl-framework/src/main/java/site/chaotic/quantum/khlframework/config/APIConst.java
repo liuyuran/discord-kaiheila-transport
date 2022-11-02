@@ -5,6 +5,7 @@ public class APIConst {
 
     public static final String KaiHLApiGateway = "/gateway/index?compress=0";
     public static final String KaiHLApiMessageCreate = "/message/create";
+    public static final String KaiHLApiAssetCreate = "/asset/create";
 
     public static final int MSG_TYPE_API = 0;
     public static final int MSG_TYPE_HELLO = 1;

@@ -13,7 +13,10 @@ import site.chaotic.quantum.khlframework.struct.ws.NormalExtraFragment;
 import site.chaotic.quantum.messagetransportserver.consts.MessageType;
 import site.chaotic.quantum.messagetransportserver.util.MessageCard;
 
+import java.io.IOException;
 import java.util.List;
+
+import static site.chaotic.quantum.messagetransportserver.util.DownloadUtil.downloadImage;
 
 /**
  * 开黑啦API服务
@@ -33,7 +36,7 @@ public class KookService {
     }
 
     @Scheduled(cron = "*/10 * * * * ? ")
-    public void syncMessage() {
+    public void syncMessage() throws IOException {
         List<MessageCard> messageCards = bridgeService.clearToKook();
         for (MessageCard card: messageCards) {
             if (bridgeService.translateChannelId(card.getChannelId()) == null) continue;
@@ -42,6 +45,10 @@ public class KookService {
                     client.sendMessage(bridgeService.translateChannelId(card.getChannelId()), card.getContent()).subscribe();
                     break;
                 case Image:
+                    for (String url: card.getContent().split(",")) {
+                        client.sendImage(bridgeService.translateChannelId(card.getChannelId()), downloadImage(url)).subscribe();
+                    }
+                    break;
                 case Unknown:
                 default:
                     break;

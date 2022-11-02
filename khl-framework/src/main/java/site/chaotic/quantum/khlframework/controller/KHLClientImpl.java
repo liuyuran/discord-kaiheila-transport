@@ -3,7 +3,10 @@ package site.chaotic.quantum.khlframework.controller;
 import com.google.gson.Gson;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.context.ApplicationContext;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.MultipartBodyBuilder;
+import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.socket.client.ReactorNettyWebSocketClient;
 import org.springframework.web.reactive.socket.client.WebSocketClient;
@@ -12,6 +15,7 @@ import site.chaotic.quantum.khlframework.config.KHLBotConfig;
 import site.chaotic.quantum.khlframework.interfaces.KHLClient;
 import site.chaotic.quantum.khlframework.json.GsonDecoder;
 import site.chaotic.quantum.khlframework.json.GsonEncoder;
+import site.chaotic.quantum.khlframework.struct.http.AssetCreateResponse;
 import site.chaotic.quantum.khlframework.struct.http.GatewayResponseBody;
 import site.chaotic.quantum.khlframework.struct.http.MessageCreateRequest;
 import site.chaotic.quantum.khlframework.struct.http.MessageCreateResponse;
@@ -92,5 +96,19 @@ public class KHLClientImpl implements KHLClient {
                     if (item.getCode() == 0) return Mono.empty();
                     return Mono.error(new Exception(item.getMessage()));
                 });
+    }
+
+    @Override
+    public Mono<Void> sendImage(String channelId, byte[] data) {
+        MultipartBodyBuilder builder = new MultipartBodyBuilder();
+        builder.part("file", new ByteArrayResource(data)).filename("anonymous.png");
+        return webClient.post().uri(KaiHLApiAssetCreate)
+                .header("Authorization", String.format("Bot %s", botConfig.getToken()))
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .body(BodyInserters.fromMultipartData(builder.build()))
+                .retrieve().bodyToMono(AssetCreateResponse.class).flatMap(item -> {
+                    if (item.getCode() == 0) return Mono.just(item.getData().getUrl());
+                    return Mono.error(new Exception(item.getMessage()));
+                }).flatMap(url -> sendMessage(channelId, url));
     }
 }

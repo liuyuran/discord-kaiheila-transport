@@ -6,6 +6,8 @@ import discord4j.core.DiscordClient;
 import discord4j.core.DiscordClientBuilder;
 import discord4j.core.event.domain.Event;
 import discord4j.core.event.domain.message.MessageCreateEvent;
+import discord4j.discordjson.json.AttachmentData;
+import discord4j.discordjson.json.EmbedData;
 import discord4j.discordjson.json.MessageData;
 import discord4j.rest.request.RouterOptions;
 import lombok.extern.log4j.Log4j2;
@@ -21,6 +23,7 @@ import site.chaotic.quantum.messagetransportserver.util.MessageCard;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Log4j2
@@ -46,13 +49,31 @@ public class DiscordService {
                             .flatMap(message -> message.getChannel().flatMap(channel -> {
                                 log.info(String.format("[%s] %s", channel.getId().asString(), message.getData().content()));
                                 if (message.getUserData().bot().toOptional().orElse(false)) return Mono.empty();
-                                bridgeService.addToKook(new MessageCard(
-                                        MessageType.Text,
-                                        channel.getId().asString(),
-                                        String.format("%s: %s",
-                                                message.getUserData().username(),
-                                                message.getData().content())
-                                ));
+                                List<EmbedData> embedData = message.getData().embeds();
+                                List<AttachmentData> attachmentData = message.getData().attachments();
+                                if (embedData.size() == 0 && attachmentData.size() == 0) {
+                                    bridgeService.addToKook(new MessageCard(
+                                            MessageType.Text,
+                                            channel.getId().asString(),
+                                            String.format("%s: %s",
+                                                    message.getUserData().username(),
+                                                    message.getData().content())
+                                    ));
+                                } else if (embedData.size() > 0) {
+                                    bridgeService.addToKook(new MessageCard(
+                                            MessageType.Image,
+                                            channel.getId().asString(),
+                                            embedData.stream().map(item -> item.url().get())
+                                                    .collect(Collectors.joining(","))
+                                    ));
+                                } else {
+                                    bridgeService.addToKook(new MessageCard(
+                                            MessageType.Image,
+                                            channel.getId().asString(),
+                                            attachmentData.stream().map(AttachmentData::url)
+                                                    .collect(Collectors.joining(","))
+                                    ));
+                                }
                                 return Mono.empty();
                             })));
             final Publisher<?> onDisconnect = gateway.onDisconnect()
