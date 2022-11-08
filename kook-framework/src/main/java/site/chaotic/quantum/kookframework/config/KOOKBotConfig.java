@@ -13,5 +13,4 @@ public class KOOKBotConfig {
     private String clientSecret;
     private String token;
     private String prefix = "/";
-    private HashMap<String, Class<? extends Command>> commands;
 }

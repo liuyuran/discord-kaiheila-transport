@@ -2,6 +2,7 @@ package site.chaotic.quantum.kookframework.controller;
 
 import com.google.gson.Gson;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.io.ByteArrayResource;
@@ -12,6 +13,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.socket.client.ReactorNettyWebSocketClient;
 import org.springframework.web.reactive.socket.client.WebSocketClient;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 import site.chaotic.quantum.kookframework.config.KOOKBotConfig;
 import site.chaotic.quantum.kookframework.enums.MessageType;
 import site.chaotic.quantum.kookframework.interfaces.KOOKClient;
@@ -31,6 +33,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Duration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -39,16 +42,15 @@ import static site.chaotic.quantum.kookframework.config.APIConst.*;
 
 @Log4j2
 public class KOOKClientImpl implements KOOKClient {
-    private final static Pattern commandAnalysis = Pattern.compile("^(?<command>\\w+) +(?<content>.+)$");
     private final WebClient webClient;
     private final WebSocketController controller;
     private final KOOKBotConfig config;
-    private final ApplicationContext context;
+
 
     public KOOKClientImpl(WebClient.Builder builder,
                           KOOKBotConfig config,
-                          ApplicationContext publisher, Gson gson) {
-        this.context = publisher;
+                          ApplicationContext publisher,
+                          Gson gson) {
         webClient = builder.baseUrl(KaiHLBaseUrl).codecs(clientCodecConfigurer -> {
             clientCodecConfigurer.customCodecs().register(new GsonEncoder(gson));
             clientCodecConfigurer.customCodecs().register(new GsonDecoder(gson));
@@ -58,6 +60,11 @@ public class KOOKClientImpl implements KOOKClient {
         connect().subscribe();
     }
 
+    /**
+     * 根据KOOK官方文档，连接Websocket需要先从api里取地址
+     *
+     * @return websocket连接地址
+     */
     private Mono<String> generateWSGateway() {
         return webClient.get().uri(KaiHLApiGateway)
                 .header("Authorization", String.format("Bot %s", config.getToken()))
@@ -70,6 +77,9 @@ public class KOOKClientImpl implements KOOKClient {
                 });
     }
 
+    /**
+     * 建立基于netty的websocket连接
+     */
     private Mono<Void> connect() {
         // 两次尝试时间间隔60秒
         log.info("websocket准备启动");
@@ -90,7 +100,7 @@ public class KOOKClientImpl implements KOOKClient {
             } catch (URISyntaxException e) {
                 return Mono.error(e);
             }
-        }).doOnTerminate(() -> {
+        }).publishOn(Schedulers.boundedElastic()).doOnTerminate(() -> {
             log.info("连接中断，正在自动重连");
             connect().subscribe();
         });
@@ -124,24 +134,5 @@ public class KOOKClientImpl implements KOOKClient {
                     if (item.getCode() == 0) return Mono.just(item.getData().getUrl());
                     return Mono.error(new Exception(item.getMessage()));
                 }).flatMap(url -> sendMessage(channelId, url));
-    }
-
-    @EventListener
-    public void processMessageEvent(BaseEvent<BaseMessageContent<NormalExtraFragment>> event) throws Exception {
-        HashMap<String, Class<? extends Command>> commands = config.getCommands();
-        String message = event.getData().getContent();
-        MessageType msgType = MessageType.fromKookCode(event.getData().getType());
-        if (msgType != MessageType.Text || !message.startsWith(config.getPrefix())) return;
-        String needAnalysis = message.replaceFirst(config.getPrefix(), "").trim();
-        Matcher matcher = commandAnalysis.matcher(needAnalysis);
-        if (!matcher.find()) return;
-        String commandType = matcher.group("command");
-        if (!commands.containsKey(commandType)) return;
-        context.getBean(commands.get(commandType)).execute(new CommandEvent(
-                event.getData().getTargetId(),
-                message,
-                commandType,
-                matcher.group("content")
-        ));
     }
 }

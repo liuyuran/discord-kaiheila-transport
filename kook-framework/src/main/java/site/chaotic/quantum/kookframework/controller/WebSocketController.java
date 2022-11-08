@@ -15,6 +15,9 @@ import java.time.Duration;
 
 import static site.chaotic.quantum.kookframework.config.APIConst.*;
 
+/**
+ * websocket基础交互，包含对KOOK相关文档的部分实现
+ */
 @Log4j2
 public class WebSocketController implements WebSocketHandler {
     private final ApplicationContext publisher;
