@@ -18,7 +18,7 @@ import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;
 import reactor.netty.transport.ProxyProvider;
 import site.chaotic.quantum.messagetransportserver.config.DiscordBotConfig;
-import site.chaotic.quantum.messagetransportserver.consts.MessageType;
+import site.chaotic.quantum.kookframework.enums.MessageType;
 import site.chaotic.quantum.messagetransportserver.util.MessageCard;
 
 import java.util.ArrayList;

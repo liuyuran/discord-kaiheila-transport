@@ -1,4 +1,4 @@
-package site.chaotic.quantum.messagetransportserver.consts;
+package site.chaotic.quantum.kookframework.enums;
 
 import java.util.HashMap;
 

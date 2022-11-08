@@ -2,19 +2,18 @@ package site.chaotic.quantum.messagetransportserver.service;
 
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.event.EventListener;
+import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import site.chaotic.quantum.kookframework.config.KOOKBotConfig;
 import site.chaotic.quantum.kookframework.interfaces.KOOKClient;
-import site.chaotic.quantum.kookframework.struct.BaseEvent;
-import site.chaotic.quantum.kookframework.struct.ws.BaseMessageContent;
-import site.chaotic.quantum.kookframework.struct.ws.NormalExtraFragment;
-import site.chaotic.quantum.messagetransportserver.consts.MessageType;
+import site.chaotic.quantum.kookframework.struct.Command;
 import site.chaotic.quantum.messagetransportserver.util.MessageCard;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
 
 import static site.chaotic.quantum.messagetransportserver.util.DownloadUtil.downloadImage;
 
@@ -26,12 +25,10 @@ import static site.chaotic.quantum.messagetransportserver.util.DownloadUtil.down
 public class KookService {
     private final BridgeService bridgeService;
     private final KOOKClient client;
-    private final String correctPrefix;
 
     @Autowired
-    public KookService(BridgeService bridgeService, KOOKBotConfig config, KOOKClient client) {
+    public KookService(ApplicationContext context, BridgeService bridgeService, KOOKBotConfig config, KOOKClient client) {
         this.bridgeService = bridgeService;
-        this.correctPrefix = String.format("/%s", config.getCommandPrefix());
         this.client = client;
     }
 
@@ -54,18 +51,5 @@ public class KookService {
                     break;
             }
         }
-    }
-
-    @EventListener
-    public void processMessageEvent(BaseEvent<BaseMessageContent<NormalExtraFragment>> event) {
-        String message = event.getData().getContent();
-        MessageType msgType = MessageType.fromKookCode(event.getData().getType());
-        if (msgType != MessageType.Text || !message.startsWith(correctPrefix)) return;
-        String needTransport = message.replaceFirst(correctPrefix, "").trim();
-        bridgeService.addToDiscord(new MessageCard(
-                msgType,
-                event.getData().getTargetId(),
-                needTransport)
-        );
     }
 }
