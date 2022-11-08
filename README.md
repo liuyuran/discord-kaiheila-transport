@@ -9,7 +9,7 @@
 
 `1. message-transport-server`
 
-测试项目，用来进行回声实验
+测试项目，用来进行信息传递实验
 
 运行时请记得在application.properties里写入如下配置：
 
@@ -17,10 +17,13 @@
 kook.client-id=<KOOK应用中心里的对应参数>
 kook.client-secret=<KOOK应用中心里的对应参数>
 kook.token=<KOOK应用中心里对应机器人的参数>
-kook.command-prefix=<命令前缀，比如transport，机器人就会对/transport进行转发>
 discord.token=<Discord应用中心BOT选项卡里的token>
 discord.with-local-proxy=<如果需要在墙内开代理，记得设定为true，然后修改代码里的代理配置，否则为false>
 ```
+
+目前来说，想要实用化，真正需要改的地方在这个项目的events包下，参考`EchoChannelCommand`类，可以自己实现相关机器人，凡是实现`Command`类的机器人都会被包扫描机制自动加载。
+
+但是目前能发送的信息类型仍然有限制，暂时不打算提前实现，因为只有用到的时候才知道哪些参数是可以被忽略的鸡肋，有兴趣的话可以试着自行实现。
 
 `2. 不存在的`
 
