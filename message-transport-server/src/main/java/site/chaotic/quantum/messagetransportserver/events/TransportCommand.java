@@ -9,12 +9,17 @@ import site.chaotic.quantum.messagetransportserver.service.BridgeService;
 import site.chaotic.quantum.messagetransportserver.util.MessageCard;
 
 @Service
-public class TransportEvent implements Command {
+public class TransportCommand implements Command {
     private final BridgeService bridgeService;
 
     @Autowired
-    public TransportEvent(BridgeService bridgeService) {
+    public TransportCommand(BridgeService bridgeService) {
         this.bridgeService = bridgeService;
+    }
+
+    @Override
+    public String getCommand() {
+        return "test";
     }
 
     @Override

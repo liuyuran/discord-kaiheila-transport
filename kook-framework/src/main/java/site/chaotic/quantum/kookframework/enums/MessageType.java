@@ -2,6 +2,10 @@ package site.chaotic.quantum.kookframework.enums;
 
 import java.util.HashMap;
 
+/**
+ * KOOK的消息类型映射
+ * <p>目前的基本原则就是用到一种就添加一种</p>
+ */
 public enum MessageType {
     Unknown(-1),
     Image(2),

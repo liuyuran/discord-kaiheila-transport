@@ -7,6 +7,11 @@ import site.chaotic.quantum.messagetransportserver.util.MessageCard;
 import java.util.*;
 import java.util.concurrent.LinkedBlockingQueue;
 
+/**
+ * 消息队列辅助类，用于入队/出队和获取绑定的频道编号
+ *
+ * @see ChannelLink
+ */
 @Service
 public class BridgeService {
     private final Queue<MessageCard> messageQueueToDiscord = new LinkedBlockingQueue<>();
