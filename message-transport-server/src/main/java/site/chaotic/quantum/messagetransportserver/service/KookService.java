@@ -18,7 +18,7 @@ import java.util.regex.Pattern;
 import static site.chaotic.quantum.messagetransportserver.util.DownloadUtil.downloadImage;
 
 /**
- * 开黑啦API服务
+ * 轮询消息队列，将消息推送至KOOK
  */
 @Service
 @Log4j2
@@ -27,7 +27,7 @@ public class KookService {
     private final KOOKClient client;
 
     @Autowired
-    public KookService(ApplicationContext context, BridgeService bridgeService, KOOKBotConfig config, KOOKClient client) {
+    public KookService(BridgeService bridgeService, KOOKBotConfig config, KOOKClient client) {
         this.bridgeService = bridgeService;
         this.client = client;
     }
