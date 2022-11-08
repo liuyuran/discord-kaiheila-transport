@@ -3,7 +3,7 @@
 
 该工程全部基于Spring Boot WebFlux，欢迎参考，GPLv3协议请谨慎引用。多年前的旧项目，近期突然想起来想重启而已。
 
-`0. khl-framework`
+`0. kook-framework`
 
 提取出的半成品框架
 

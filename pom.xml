@@ -8,7 +8,7 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>khl-framework</module>
+        <module>kook-framework</module>
         <module>message-transport-server</module>
     </modules>
 
@@ -22,7 +22,7 @@
         <dependencies>
             <dependency>
                 <groupId>site.chaotic.quantum</groupId>
-                <artifactId>khl-framework</artifactId>
+                <artifactId>kook-framework</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

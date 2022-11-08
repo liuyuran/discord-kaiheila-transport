@@ -23,7 +23,7 @@
         </dependency>
         <dependency>
             <groupId>site.chaotic.quantum</groupId>
-            <artifactId>khl-framework</artifactId>
+            <artifactId>kook-framework</artifactId>
         </dependency>
         <dependency>
             <groupId>com.discord4j</groupId>

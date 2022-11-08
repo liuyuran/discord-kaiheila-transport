@@ -1,1 +1,0 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=site.chaotic.quantum.khlframework.KhlClientAutoConfiguration

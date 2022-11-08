@@ -5,11 +5,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import site.chaotic.quantum.khlframework.config.KHLBotConfig;
-import site.chaotic.quantum.khlframework.interfaces.KHLClient;
-import site.chaotic.quantum.khlframework.struct.BaseEvent;
-import site.chaotic.quantum.khlframework.struct.ws.BaseMessageContent;
-import site.chaotic.quantum.khlframework.struct.ws.NormalExtraFragment;
+import site.chaotic.quantum.kookframework.config.KOOKBotConfig;
+import site.chaotic.quantum.kookframework.interfaces.KOOKClient;
+import site.chaotic.quantum.kookframework.struct.BaseEvent;
+import site.chaotic.quantum.kookframework.struct.ws.BaseMessageContent;
+import site.chaotic.quantum.kookframework.struct.ws.NormalExtraFragment;
 import site.chaotic.quantum.messagetransportserver.consts.MessageType;
 import site.chaotic.quantum.messagetransportserver.util.MessageCard;
 
@@ -25,11 +25,11 @@ import static site.chaotic.quantum.messagetransportserver.util.DownloadUtil.down
 @Log4j2
 public class KookService {
     private final BridgeService bridgeService;
-    private final KHLClient client;
+    private final KOOKClient client;
     private final String correctPrefix;
 
     @Autowired
-    public KookService(BridgeService bridgeService, KHLBotConfig config, KHLClient client) {
+    public KookService(BridgeService bridgeService, KOOKBotConfig config, KOOKClient client) {
         this.bridgeService = bridgeService;
         this.correctPrefix = String.format("/%s", config.getCommandPrefix());
         this.client = client;
